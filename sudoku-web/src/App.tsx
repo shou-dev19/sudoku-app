@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Board, { BoardState, CellValue } from './Board.tsx';
-import Keypad from './Keypad.tsx';
 import './App.css';
 
 // 9x9の空盤面生成
@@ -62,6 +61,8 @@ const App: React.FC = () => {
   const [cleared, setCleared] = useState(false);
   const [startTime, setStartTime] = useState<number|null>(null);
   const [elapsed, setElapsed] = useState<number>(0);
+  const [paused, setPaused] = useState(false);
+  const [resumeAvailable, setResumeAvailable] = useState(false);
 
   // セーブ/ロード
   useEffect(() => {
@@ -72,6 +73,7 @@ const App: React.FC = () => {
       setCurrent(data.current);
       setStartTime(data.startTime);
       setElapsed(data.elapsed || 0);
+      setResumeAvailable(true);
     } else {
       setStartTime(Date.now());
     }
@@ -89,12 +91,12 @@ const App: React.FC = () => {
 
   // タイマー
   useEffect(() => {
-    if (cleared || !startTime) return;
+    if (cleared || !startTime || paused) return;
     const timer = setInterval(() => {
       setElapsed(Date.now() - startTime);
     }, 1000);
     return () => clearInterval(timer);
-  }, [cleared, startTime]);
+  }, [cleared, startTime, paused]);
 
   // セル選択
   const handleCellSelect = (row: number, col: number) => {
@@ -122,11 +124,26 @@ const App: React.FC = () => {
     setCleared(false);
     setStartTime(Date.now());
     setElapsed(0);
+    setPaused(false);
+    setResumeAvailable(false);
     localStorage.removeItem(SAVE_KEY);
   };
 
+  // 中断（保存）
+  const handlePause = () => {
+    setPaused(true);
+    setResumeAvailable(true);
+    localStorage.setItem(SAVE_KEY, JSON.stringify({initial, current, startTime, elapsed}));
+  };
+
+  // 再開
+  const handleResume = () => {
+    setPaused(false);
+    setStartTime(Date.now() - elapsed);
+  };
+
   return (
-    <div className="App">
+    <div className="App" style={{minHeight: '100vh', display: 'flex', flexDirection: 'column'}}>
       <header className="app-header-bar">
         <div className="header-left">
           <span className="time-info">経過時間: {Math.floor(elapsed/1000)}秒</span>
@@ -143,7 +160,7 @@ const App: React.FC = () => {
           </button>
         </div>
       </header>
-      <main>
+      <main style={{flex: 1}}>
         <Board
           initial={initial}
           current={current}
@@ -151,13 +168,74 @@ const App: React.FC = () => {
           errors={errors}
           onCellSelect={handleCellSelect}
         />
-        <Keypad onInput={handleInput} />
         {cleared && (
           <div style={{marginTop:8, textAlign: 'center'}}>
             <span className="time-info">クリア！ 経過時間: {Math.floor(elapsed/1000)}秒</span>
           </div>
         )}
+        {paused && (
+          <div style={{marginTop: 16, textAlign: 'center', color: '#fff', fontWeight: 'bold'}}>
+            <span>中断中です。「再開」ボタンで続きからプレイできます。</span>
+          </div>
+        )}
       </main>
+      {/* フッター */}
+      <footer style={{position: 'sticky', bottom: 0, background: '#181e2a', borderTop: '1px solid #3a4252', paddingBottom: 'env(safe-area-inset-bottom, 0)'}}>
+        <div style={{display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 4, padding: 8, maxWidth: 400, margin: '0 auto'}}>
+          {[1,2,3,4,5,6,7,8,9].map(n => (
+            <button
+              key={n}
+              onClick={() => handleInput(n)}
+              style={{
+                aspectRatio: '1/1',
+                borderRadius: 6,
+                background: '#232b3a',
+                color: '#e0e6f0',
+                fontWeight: 'bold',
+                fontSize: '1.3rem',
+                border: '1px solid #3a4252',
+                margin: 0,
+                padding: 0,
+                cursor: 'pointer',
+                transition: 'background 0.2s, color 0.2s',
+              }}
+              disabled={paused}
+            >{n}</button>
+          ))}
+        </div>
+        <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, padding: '8px 16px'}}>
+          <button
+            onClick={() => handleInput(null)}
+            style={{flex: 1, height: 48, borderRadius: 8, background: '#232b3a', color: '#e0e6f0', fontWeight: 'bold', fontSize: '1rem', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer'}}
+            disabled={paused}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21H7Z"></path><path d="M22 21H7"></path><path d="m5 12 5 5"></path></svg>
+            消去
+          </button>
+          <button
+            onClick={handlePause}
+            style={{flex: 1, height: 48, borderRadius: 8, background: '#facc15', color: '#181e2a', fontWeight: 'bold', fontSize: '1rem', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer'}}
+            disabled={paused}
+          >
+            <div style={{display: 'flex', alignItems: 'center', gap: 4}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+              <span>中断</span>
+            </div>
+            <span style={{fontSize: '0.8em', fontWeight: 'normal'}}>ゲームを保存</span>
+          </button>
+          <button
+            onClick={handleResume}
+            style={{flex: 1, height: 48, borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 'bold', fontSize: '1rem', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, cursor: 'pointer'}}
+            disabled={!paused && !resumeAvailable}
+          >
+            <div style={{display: 'flex', alignItems: 'center', gap: 4}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+              <span>再開</span>
+            </div>
+            <span style={{fontSize: '0.8em', fontWeight: 'normal'}}>前回の続きから</span>
+          </button>
+        </div>
+      </footer>
     </div>
   );
 };
