@@ -53,6 +53,67 @@ function isCleared(board: BoardState, errors: boolean[][]): boolean {
   return true;
 }
 
+// --- ランダムな完成盤面を生成する関数 ---
+function shuffle<T>(array: T[]): T[] {
+  const arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function isSafe(board: BoardState, row: number, col: number, num: number): boolean {
+  for (let x = 0; x < 9; x++) {
+    if (board[row][x] === num || board[x][col] === num) return false;
+  }
+  const startRow = Math.floor(row / 3) * 3;
+  const startCol = Math.floor(col / 3) * 3;
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      if (board[startRow + i][startCol + j] === num) return false;
+    }
+  }
+  return true;
+}
+
+function fillBoard(board: BoardState): boolean {
+  for (let row = 0; row < 9; row++) {
+    for (let col = 0; col < 9; col++) {
+      if (board[row][col] === null) {
+        for (const num of shuffle([1,2,3,4,5,6,7,8,9])) {
+          if (isSafe(board, row, col, num)) {
+            board[row][col] = num;
+            if (fillBoard(board)) return true;
+            board[row][col] = null;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function generateSudokuPuzzle(emptyCells: number = 40): BoardState {
+  // 完成盤面を作る
+  const board: BoardState = emptyBoard();
+  fillBoard(board);
+  // 問題用に指定数だけランダムに空欄にする
+  let count = 0;
+  const cells = shuffle(Array.from({length: 81}, (_, i) => i));
+  for (const idx of cells) {
+    if (count >= emptyCells) break;
+    const r = Math.floor(idx / 9);
+    const c = idx % 9;
+    if (board[r][c] !== null) {
+      board[r][c] = null;
+      count++;
+    }
+  }
+  return cloneBoard(board);
+}
+
 const App: React.FC = () => {
   const [initial, setInitial] = useState<BoardState>(cloneBoard(samplePuzzle));
   const [current, setCurrent] = useState<BoardState>(cloneBoard(samplePuzzle));
@@ -63,6 +124,8 @@ const App: React.FC = () => {
   const [elapsed, setElapsed] = useState<number>(0);
   const [paused, setPaused] = useState(false);
   const [resumeAvailable, setResumeAvailable] = useState(false);
+  // 難易度: easy=30, normal=40, hard=50
+  const [difficulty, setDifficulty] = useState<'easy'|'normal'|'hard'>('normal');
 
   // セーブ/ロード
   useEffect(() => {
@@ -118,8 +181,13 @@ const App: React.FC = () => {
 
   // 新しいゲーム
   const handleNewGame = () => {
-    setInitial(cloneBoard(samplePuzzle)); // 本来はランダム生成
-    setCurrent(cloneBoard(samplePuzzle));
+    let emptyCells = 40;
+    if (difficulty === 'easy') emptyCells = 30;
+    if (difficulty === 'normal') emptyCells = 40;
+    if (difficulty === 'hard') emptyCells = 50;
+    const puzzle = generateSudokuPuzzle(emptyCells);
+    setInitial(cloneBoard(puzzle));
+    setCurrent(cloneBoard(puzzle));
     setSelected(null);
     setCleared(false);
     setStartTime(Date.now());
@@ -145,8 +213,56 @@ const App: React.FC = () => {
   return (
     <div className="App" style={{minHeight: '100vh', display: 'flex', flexDirection: 'column'}}>
       <header className="app-header-bar">
-        <div className="header-left">
+        <div className="header-left" style={{display:'flex',alignItems:'center',gap:12}}>
           <span className="time-info">経過時間: {Math.floor(elapsed/1000)}秒</span>
+          {/* 難易度選択UI */}
+          <div style={{marginLeft:8, display:'flex', gap:4}}>
+            <button
+              style={{
+                padding: '2px 10px',
+                borderRadius: 6,
+                border: difficulty==='easy' ? '2px solid #facc15' : '1px solid #3a4252',
+                background: difficulty==='easy' ? '#facc15' : '#232b3a',
+                color: difficulty==='easy' ? '#181e2a' : '#e0e6f0',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '0.95em',
+                transition: 'all 0.2s',
+              }}
+              onClick={()=>setDifficulty('easy')}
+              disabled={paused}
+            >やさしい</button>
+            <button
+              style={{
+                padding: '2px 10px',
+                borderRadius: 6,
+                border: difficulty==='normal' ? '2px solid #3b82f6' : '1px solid #3a4252',
+                background: difficulty==='normal' ? '#3b82f6' : '#232b3a',
+                color: difficulty==='normal' ? '#fff' : '#e0e6f0',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '0.95em',
+                transition: 'all 0.2s',
+              }}
+              onClick={()=>setDifficulty('normal')}
+              disabled={paused}
+            >ふつう</button>
+            <button
+              style={{
+                padding: '2px 10px',
+                borderRadius: 6,
+                border: difficulty==='hard' ? '2px solid #ef4444' : '1px solid #3a4252',
+                background: difficulty==='hard' ? '#ef4444' : '#232b3a',
+                color: difficulty==='hard' ? '#fff' : '#e0e6f0',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                fontSize: '0.95em',
+                transition: 'all 0.2s',
+              }}
+              onClick={()=>setDifficulty('hard')}
+              disabled={paused}
+            >むずかしい</button>
+          </div>
         </div>
         <div className="header-center">
           <h1>数独</h1>
