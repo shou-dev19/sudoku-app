@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import Board, { BoardState, CellValue } from './Board';
-import Keypad from './Keypad';
+import Board, { BoardState, CellValue } from './Board.tsx';
+import Keypad from './Keypad.tsx';
 import './App.css';
 
 // 9x9の空盤面生成
