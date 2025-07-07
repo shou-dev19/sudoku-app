@@ -141,9 +141,9 @@ const App: React.FC = () => {
       </div>
       <div style={{marginTop:8}}>
         {cleared ? (
-          <span>クリア！ 経過時間: {Math.floor(elapsed/1000)}秒</span>
+          <span className="time-info">クリア！ 経過時間: {Math.floor(elapsed/1000)}秒</span>
         ) : (
-          <span>経過時間: {Math.floor(elapsed/1000)}秒</span>
+          <span className="time-info">経過時間: {Math.floor(elapsed/1000)}秒</span>
         )}
       </div>
     </div>

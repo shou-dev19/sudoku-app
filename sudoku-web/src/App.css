@@ -2,6 +2,11 @@
   text-align: center;
 }
 
+.App h1 {
+  color: #fff;
+  text-shadow: 0 2px 8px #2228;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -14,18 +19,18 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #181e2a;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: #fff;
 }
 
 .App-link {
-  color: #61dafb;
+  color: #4fa3ff;
 }
 
 @keyframes App-logo-spin {
@@ -39,10 +44,10 @@
 
 .sudoku-board {
   display: inline-block;
-  border: 2px solid #333;
-  background: #fff;
+  border: 2px solid #fff;
+  background: #232b3a;
   margin: 16px auto;
-  box-shadow: 0 2px 8px #0002;
+  box-shadow: 0 2px 8px #000a;
 }
 .sudoku-row {
   display: flex;
@@ -50,26 +55,27 @@
 .sudoku-cell {
   width: 36px;
   height: 36px;
-  border: 1px solid #aaa;
+  border: 1px solid #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.3rem;
   cursor: pointer;
-  background: #fafafa;
+  background: #232b3a;
+  color: #e0e6f0;
   transition: background 0.2s, color 0.2s;
 }
 .sudoku-cell.initial {
   font-weight: bold;
-  color: #222;
-  background: #e0e0e0;
+  color: #fff;
+  background: #2d3648;
   cursor: default;
 }
 .sudoku-cell.selected {
-  background: #cce5ff;
+  background: #2a395b;
 }
 .sudoku-cell.error {
-  background: #ffcccc;
+  background: #5c2a2a;
 }
 .sudoku-keypad {
   display: flex;
@@ -83,13 +89,15 @@
   margin: 4px;
   font-size: 1.1rem;
   border-radius: 6px;
-  border: 1px solid #888;
-  background: #f5f5f5;
+  border: 1px solid #3a4252;
+  background: #232b3a;
+  color: #e0e6f0;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
 }
 .sudoku-keypad button:active {
-  background: #cce5ff;
+  background: #4fa3ff;
+  color: #fff;
 }
 @media (max-width: 600px) {
   .sudoku-cell {
@@ -105,4 +113,11 @@
     height: 12vw;
     font-size: 4vw;
   }
+}
+body {
+  background: #181e2a;
+}
+
+.time-info {
+  color: #fff;
 }
