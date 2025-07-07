@@ -127,25 +127,37 @@ const App: React.FC = () => {
 
   return (
     <div className="App">
-      <h1>数独</h1>
-      <Board
-        initial={initial}
-        current={current}
-        selected={selected}
-        errors={errors}
-        onCellSelect={handleCellSelect}
-      />
-      <Keypad onInput={handleInput} />
-      <div style={{marginTop:8}}>
-        <button onClick={handleNewGame}>新しいゲーム</button>
-      </div>
-      <div style={{marginTop:8}}>
-        {cleared ? (
-          <span className="time-info">クリア！ 経過時間: {Math.floor(elapsed/1000)}秒</span>
-        ) : (
+      <header className="app-header-bar">
+        <div className="header-left">
           <span className="time-info">経過時間: {Math.floor(elapsed/1000)}秒</span>
+        </div>
+        <div className="header-center">
+          <h1>数独</h1>
+        </div>
+        <div className="header-right">
+          <button className="icon-btn" onClick={handleNewGame} title="新しいゲーム">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+          </button>
+        </div>
+      </header>
+      <main>
+        <Board
+          initial={initial}
+          current={current}
+          selected={selected}
+          errors={errors}
+          onCellSelect={handleCellSelect}
+        />
+        <Keypad onInput={handleInput} />
+        {cleared && (
+          <div style={{marginTop:8, textAlign: 'center'}}>
+            <span className="time-info">クリア！ 経過時間: {Math.floor(elapsed/1000)}秒</span>
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 };
