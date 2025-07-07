@@ -48,6 +48,7 @@
   background: #232b3a;
   margin: 16px auto;
   box-shadow: 0 2px 8px #000a;
+  position: relative;
 }
 .sudoku-row {
   display: flex;
@@ -55,7 +56,7 @@
 .sudoku-cell {
   width: 36px;
   height: 36px;
-  border: 1px solid #fff;
+  border: 1px solid #3a4252;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,6 +65,20 @@
   background: #232b3a;
   color: #e0e6f0;
   transition: background 0.2s, color 0.2s;
+  position: relative;
+  box-sizing: border-box;
+}
+.sudoku-row:nth-child(3n) .sudoku-cell {
+  border-bottom: 2px solid #fff;
+}
+.sudoku-cell:nth-child(3n) {
+  border-right: 2px solid #fff;
+}
+.sudoku-row:nth-child(9) .sudoku-cell {
+  border-bottom: 2px solid #fff;
+}
+.sudoku-cell:nth-child(9) {
+  border-right: 2px solid #fff;
 }
 .sudoku-cell.initial {
   font-weight: bold;
